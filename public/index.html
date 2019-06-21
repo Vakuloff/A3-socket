@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<title>Lab 3 | Web Chat</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font: 13px Helvetica, Arial; }
+h1{text-align: center; padding:20px;}
+header{position:relative;}
+#roll{position:fixed;bottom:0;right:0;background:pink;border:2px solid black;}
+form { background: #000; padding: 3px; width: 100%; }
+form input { border: 0; padding: 10px; width: 66%; margin-right: .5%; }
+form button {padding: 10px 15px; }
+#btn_send{background: #00ff00;width:16%;}
+#btn_quit{background:red;}
+#login{background:#c0c0c0; padding:10px;20px;}
+#messages, #users { list-style-type: none; margin: 0; padding: 0; }
+#messages li, #users li{ padding: 5px 10px; }
+#messages li:nth-child(odd) { background: #eee; }
+.clear{clear:both;}
+main{
+  width: 50%;
+}
+</style>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="container">
+	<header>
+		<h1>Game</h1>
+    <h2>One player draw a picture, second player try to define what was drawed</h2>
+		<div id="roll"><h2>Chat Users</h2><ul id="users"></ul><br class="clear"/></div>
+	</header>
+
+<!-- CHAT GUI -->
+	<main>
+		<section id="login">
+			<p>
+				<span>Welcome! Please provide your chat name...</span>
+				<input type="text" id="login_txt" autocomplete="off"/>
+				<button id="btn_login">Sign in</button>
+			</p> 
+		</section>
+		
+		 <form action="">
+		   <input type="text" id="txt_msg" autocomplete="off" />
+		   <input type="submit" id="btn_send" value="Send" />
+		   <button id="btn_quit">Leave Chat</button>
+		</form>
+		<ul id="messages"></ul>
+	</main>
+
+
+<!-- CANVAS -->
+<canvas class="whiteboard" ></canvas>
+
+  <div class="colors">
+    <div class="color black"></div>
+    <div class="color red"></div>
+    <div class="color green"></div>
+    <div class="color blue"></div>
+    <div class="color yellow"></div>
+  </div>
+
+</div> <!--END container-->
+
+<!--INCLUDE LIBRARIES -->
+	<script src="/socket.io/socket.io.js"></script>
+	<script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+  <script src="/main.js"></script>
+<script>
+//SOCKET LISTENERS
+var socket = io();
+$(function () {
+    var socket = io();
+    $('#btn_login').click(function(e){
+    	e.preventDefault();
+    	socket.emit('chat member', $('#login_txt').val());
+    	('#login_txt').val('');
+    	return false;
+    });
+    $('form').submit(function(e){
+      e.preventDefault(); // prevents page reloading
+      socket.emit('chat message',$('#login_txt').val() + ": " + $('#txt_msg').val());
+      $('#txt_msg').val('');
+      return false;
+    });
+    $('#btn_quit').click(function(){
+    	socket.emit('chat member',$('#login_txt').val() + ": " + ' Disconnected');
+    	socket.disconnect();
+    })
+    socket.on('chat message', function(msg){
+      $('#messages').append($('<li>').text(msg));
+    });
+    socket.on('chat member', function(login){
+      $('#users').append($('<li>').text(login));
+    });
+
+  });
+
+
+
+</script>
+</body></html>
